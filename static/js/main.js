@@ -262,6 +262,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function displayClassificationResults(data) {
+        console.log('Classification data received:', data);
+        
         // Update cattle type
         const cattleTypeEl = document.getElementById('cattle-type');
         const cattleConfidenceEl = document.getElementById('cattle-confidence');
@@ -269,12 +271,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (cattleTypeEl && data.cattle_type) {
             cattleTypeEl.textContent = data.cattle_type;
+            console.log('Updated cattle type:', data.cattle_type);
         }
         
         if (cattleConfidenceEl && cattlePercentageEl && data.cattle_confidence) {
             const confidence = parseFloat(data.cattle_confidence.replace('%', ''));
             cattleConfidenceEl.style.width = confidence + '%';
             cattlePercentageEl.textContent = data.cattle_confidence;
+            console.log('Updated cattle confidence:', data.cattle_confidence);
             
             // Update confidence color based on value
             if (confidence >= 80) {
@@ -292,8 +296,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const breedConfidenceEl = document.getElementById('breed-confidence');
         const breedPercentageEl = document.getElementById('breed-percentage');
         
+        console.log('Breed data:', { breed: data.breed, confidence: data.breed_confidence });
+        
         if (data.breed && data.breed !== 'Unknown' && breedCard) {
             breedCard.style.display = 'block';
+            console.log('Showing breed card for:', data.breed);
             
             if (breedNameEl) {
                 breedNameEl.textContent = data.breed;
@@ -303,6 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const breedConf = parseFloat(data.breed_confidence.replace('%', ''));
                 breedConfidenceEl.style.width = breedConf + '%';
                 breedPercentageEl.textContent = data.breed_confidence;
+                console.log('Updated breed confidence:', data.breed_confidence);
                 
                 // Update confidence color
                 if (breedConf >= 80) {
@@ -313,8 +321,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     breedConfidenceEl.style.background = 'var(--error-color)';
                 }
             }
-        } else if (breedCard) {
-            breedCard.style.display = 'none';
+        } else {
+            console.log('Hiding breed card - no breed data or unknown breed');
+            if (breedCard) {
+                breedCard.style.display = 'none';
+            }
         }
     }
 

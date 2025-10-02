@@ -144,28 +144,37 @@ def predict():
         
         # Make predictions
         cattle_type, cattle_confidence = predict_cattle(image)
+        app.logger.info(f'Cattle prediction: {cattle_type} with confidence {cattle_confidence:.3f}')
         
         # Only predict breed if it's a cow or buffalo with high confidence
-        breed_result = None
+        breed_name = None
+        breed_confidence = None
         if cattle_confidence >= 0.60 and cattle_type in ['Cow', 'Buffalo']:
-            breed_name, breed_confidence = predict_breed(image)
-            breed_result = {
-                'name': breed_name,
-                'confidence': f"{breed_confidence*100:.2f}%"
-            }
+            app.logger.info(f'Attempting breed prediction for {cattle_type}')
+            breed_name, breed_conf = predict_breed(image)
+            breed_confidence = f"{breed_conf*100:.2f}%"
+            app.logger.info(f'Breed prediction: {breed_name} with confidence {breed_conf:.3f}')
+        else:
+            app.logger.info(f'Skipping breed prediction - confidence too low ({cattle_confidence:.3f}) or not cattle/buffalo ({cattle_type})')
         
         # Convert image to base64 for display
         buffered = BytesIO()
         image.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue()).decode()
         
-        return jsonify({
+        response_data = {
             'success': True,
             'cattle_type': cattle_type,
             'cattle_confidence': f"{cattle_confidence*100:.2f}%",
-            'breed_result': breed_result,
             'image': img_str
-        })
+        }
+        
+        # Add breed information if available
+        if breed_name and breed_confidence:
+            response_data['breed'] = breed_name
+            response_data['breed_confidence'] = breed_confidence
+        
+        return jsonify(response_data)
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
