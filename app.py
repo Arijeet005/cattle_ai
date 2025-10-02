@@ -1,11 +1,13 @@
 import os
 import base64
 from io import BytesIO
+import numpy as np  # Add numpy import
 import torch
 import torch.nn as nn
 from torchvision import transforms, models
 from PIL import Image
 from flask import Flask, render_template, request, jsonify, url_for
+from body_structure_analyzer import BodyStructureAnalyzer
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -76,6 +78,9 @@ def load_breed_model(model_path, num_classes):
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 cattle_model = load_cattle_model(os.path.join(BASE_DIR, 'models', 'best_cow_buffalo_none_classifier.pth'))
 breed_model = load_breed_model(os.path.join(BASE_DIR, 'models', 'breed_classifier.pth'), len(ModelConfig.BREED_NAMES))
+
+# Initialize body structure analyzer
+body_analyzer = BodyStructureAnalyzer()
 
 # -----------------------------
 # Prediction Functions
@@ -165,20 +170,92 @@ def predict():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/about')
-def about():
-    """About page route"""
-    return render_template('about.html')
+@app.route('/analyze_structure', methods=['POST'])
+def analyze_structure():
+    """Handle image upload and body structure analysis"""
+    try:
+        app.logger.info('Received body structure analysis request')
+        
+        if 'file' not in request.files:
+            app.logger.warning('No file in request')
+            return jsonify({'error': 'No file uploaded'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            app.logger.warning('Empty filename')
+            return jsonify({'error': 'No file selected'}), 400
+        
+        if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+            app.logger.warning(f'Invalid file format: {file.filename}')
+            return jsonify({'error': 'Invalid file format'}), 400
 
-@app.route('/faq')
-def faq():
-    """FAQ page route"""
-    return render_template('faq.html')
+        # Read and process the image
+        image_data = file.read()
+        if len(image_data) > 10 * 1024 * 1024:  # 10MB
+            app.logger.warning('File too large')
+            return jsonify({'error': 'File too large'}), 400
 
-@app.route('/guide')
-def guide():
-    """User guide page route"""
-    return render_template('guide.html')
+        try:
+            image = Image.open(BytesIO(image_data)).convert('RGB')
+        except Exception as e:
+            app.logger.error(f'Error processing image: {str(e)}')
+            return jsonify({'error': 'Invalid image file'}), 400
+        
+        # First, classify the animal
+        cattle_type, cattle_confidence = predict_cattle(image)
+        
+        # Get breed if confidence is high enough
+        breed_name = "Unknown"
+        if cattle_confidence >= 0.60 and cattle_type in ['Cow', 'Buffalo']:
+            breed_name, _ = predict_breed(image)
+        
+        # Perform body structure analysis
+        app.logger.info('Starting body structure analysis')
+        keypoints = body_analyzer.detect_keypoints(image)
+        
+        if keypoints:
+            # Calculate measurements (using a default scale - in production, this would be calibrated)
+            reference_scale = 100.0  # pixels per meter (approximate)
+            measurements = body_analyzer.calculate_measurements(
+                keypoints, image.width, image.height, reference_scale
+            )
+            
+            # Generate visualization
+            vis_image = body_analyzer.visualize_measurements(image, keypoints, measurements)
+            
+            # Convert visualization to base64
+            buffered = BytesIO()
+            vis_image.save(buffered, format="JPEG")
+            vis_img_str = base64.b64encode(buffered.getvalue()).decode()
+            
+            # Generate report
+            report = body_analyzer.generate_report(measurements, cattle_type, breed_name)
+            
+            # Calculate ATC score
+            app.logger.info('Calculating ATC score')
+            atc_results = body_analyzer.calculate_atc_score(keypoints, measurements, image, cattle_type)
+            
+            return jsonify({
+                'success': True,
+                'cattle_type': cattle_type,
+                'cattle_confidence': f"{cattle_confidence*100:.2f}%",
+                'breed': breed_name,
+                'measurements': measurements,
+                'keypoints': keypoints,
+                'visualization': vis_img_str,
+                'report': report,
+                'atc_score': atc_results
+            })
+        else:
+            app.logger.warning('Could not detect keypoints')
+            return jsonify({
+                'success': False,
+                'error': 'Could not detect animal body structure in the image'
+            }), 400
+    
+    except Exception as e:
+        app.logger.error(f"Body structure analysis error: {str(e)}")
+        return jsonify({'error': 'An error occurred during body structure analysis'}), 500
 
 # Error handlers
 @app.errorhandler(404)

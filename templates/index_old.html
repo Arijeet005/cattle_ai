@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block title %}AI-Powered Cattle Analysis Platform{% endblock %}
+{% block content %}
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div cl                                <div class="measurements-section">
+                                    <h4><i class="fas fa-calculator"></i> Measurements</h4>
+                                    <div id="measurements-list" class="measurements-grid">
+                                        <!-- Measurements will be populated here -->
+                                    </div>
+                                </div>
+                                
+                                <!-- ATC Score Section -->
+                                <div class="atc-score-section">
+                                    <h4><i class="fas fa-chart-bar"></i> ATC Score Analysis</h4>
+                                    <div id="atc-score-container" class="atc-score-container">
+                                        <!-- ATC score will be populated here -->
+                                    </div>
+                                </div>
+                                
+                                <div class="report-section">" align-items-center">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <h1 class="hero-title">
+                            <span class="highlight">AI-Powered</span><br>
+                            Cattle Analysis Platform
+                        </h1>
+                        <p class="hero-subtitle">
+                            Revolutionary technology for precision livestock management combining advanced AI classification with comprehensive body structure analysis for modern dairy farming.
+                        </p>
+                        <div class="hero-features">
+                            <div class="feature-badge">
+                                <i class="fas fa-brain"></i>
+                                <span>Deep Learning</span>
+                            </div>
+                            <div class="feature-badge">
+                                <i class="fas fa-ruler-combined"></i>
+                                <span>Morphometric Analysis</span>
+                            </div>
+                            <div class="feature-badge">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Data-Driven Insights</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-image">
+                        <div class="analysis-preview">
+                            <i class="fas fa-cow"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Analysis Section -->
+    <div class="container mt-5">
+        <div class="analysis-container">
+            <div class="section-header text-center mb-5">
+                <h2 class="section-title">Upload & Analyze Your Cattle</h2>
+                <p class="section-subtitle">Get instant AI-powered classification and detailed morphometric measurements</p>
+            </div>
+
+            <div class="upload-card">
+                <div class="upload-section">
+                    <div class="upload-area" id="drop-area">
+                        <input type="file" id="fileInput" accept="image/*" class="file-input" hidden>
+                        <div class="upload-content">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <h3>Drop your image here</h3>
+                            <p>or <span class="upload-link">click to browse</span></p>
+                            <small class="upload-formats">Supports JPG, JPEG, PNG • Max 10MB</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="preview-section" class="mt-4 d-none">
+                    <div class="image-preview-container">
+                        <img id="preview-image" src="" alt="Preview">
+                        <div class="image-overlay">
+                            <div class="image-info">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Image Ready for Analysis</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-panel mt-4">
+                        <!-- Enhanced Analysis Tabs -->
+                        <div class="analysis-tabs-container">
+                            <div class="tabs-header">
+                                <h3>Analysis Results</h3>
+                                <p>Choose your analysis type</p>
+                            </div>
+                            <div class="analysis-tabs">
+                                <button class="tab-btn active" data-tab="classification">
+                                    <div class="tab-icon">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                    <div class="tab-content-text">
+                                        <h4>AI Classification</h4>
+                                        <p>Breed & Type Detection</p>
+                                    </div>
+                                </button>
+                                <button class="tab-btn featured" data-tab="structure">
+                                    <div class="tab-icon featured-icon">
+                                        <i class="fas fa-ruler-combined"></i>
+                                    </div>
+                                    <div class="tab-content-text">
+                                        <h4>Body Structure Analysis</h4>
+                                        <p>Advanced Morphometric Measurements</p>
+                                        <span class="premium-badge">
+                                            <i class="fas fa-star"></i> PREMIUM
+                                        </span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div id="loading" class="loading-container d-none">
+                            <div class="loading-content">
+                                <div class="loading-spinner">
+                                    <div class="spinner"></div>
+                                </div>
+                                <h4>Processing Your Image</h4>
+                                <p>Our AI is analyzing the cattle image...</p>
+                                <div class="loading-progress">
+                                    <div class="progress-bar"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Classification Tab Content -->
+                        <div id="classification-tab" class="tab-content active">
+                            <div id="results" class="results-container d-none">
+                                <div class="results-header">
+                                    <h3><i class="fas fa-search"></i> Classification Results</h3>
+                                    <p>AI-powered breed and type identification</p>
+                                </div>
+                                
+                                <div class="results-grid">
+                                    <div class="result-card primary">
+                                        <div class="result-header">
+                                            <i class="fas fa-tag"></i>
+                                            <h4>Cattle Type</h4>
+                                        </div>
+                                        <div class="result-value" id="cattle-type">-</div>
+                                        <div class="confidence-bar">
+                                            <div class="confidence-label">Confidence</div>
+                                            <div class="progress-container">
+                                                <div id="cattle-confidence" class="progress-bar" role="progressbar"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="breed-section" class="result-card secondary d-none">
+                                        <div class="result-header">
+                                            <i class="fas fa-dna"></i>
+                                            <h4>Breed</h4>
+                                        </div>
+                                        <div class="result-value" id="breed-name">-</div>
+                                        <div class="confidence-bar">
+                                            <div class="confidence-label">Confidence</div>
+                                            <div class="progress-container">
+                                                <div id="breed-confidence" class="progress-bar" role="progressbar"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Body Structure Analysis Tab Content -->
+                        <div id="structure-tab" class="tab-content">
+                            <div class="structure-intro">
+                                <div class="intro-card">
+                                    <div class="intro-icon">
+                                        <i class="fas fa-ruler-combined"></i>
+                                    </div>
+                                    <div class="intro-content">
+                                        <h3>Advanced Body Structure Analysis</h3>
+                                        <p>Our cutting-edge AI technology provides precise morphometric measurements for professional dairy farm management. Get detailed insights into animal conformation, body condition scoring, and productivity indicators.</p>
+                                        <div class="intro-features">
+                                            <div class="intro-feature">
+                                                <i class="fas fa-arrows-alt"></i>
+                                                <span>Body Dimensions</span>
+                                            </div>
+                                            <div class="intro-feature">
+                                                <i class="fas fa-chart-bar"></i>
+                                                <span>Condition Scoring</span>
+                                            </div>
+                                            <div class="intro-feature">
+                                                <i class="fas fa-clipboard-check"></i>
+                                                <span>Health Assessment</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Analyze Button -->
+                            <div class="analyze-btn-container">
+                                <button id="analyze-structure-btn" class="analyze-btn d-none">
+                                    <div class="btn-content">
+                                        <div class="btn-icon">
+                                            <i class="fas fa-microscope"></i>
+                                        </div>
+                                        <div class="btn-text">
+                                            <h4>Start Body Structure Analysis</h4>
+                                            <p>Get comprehensive morphometric measurements</p>
+                                        </div>
+                                    </div>
+                                    <div class="btn-arrow">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <!-- Structure Results -->
+                            <div id="structure-results" class="structure-results d-none">
+                                <div class="results-header">
+                                    <h3><i class="fas fa-ruler-combined"></i> Morphometric Analysis</h3>
+                                    <p>Detailed body structure measurements and assessment</p>
+                                </div>
+                                
+                                <div class="structure-visualization-card">
+                                    <h4><i class="fas fa-eye"></i> Visual Analysis</h4>
+                                    <div class="visualization-container">
+                                        <img id="structure-image" src="" alt="Body Structure Analysis" class="structure-image">
+                                        <div class="visualization-overlay">
+                                            <div class="measurement-points">
+                                                <!-- Dynamic measurement points will be added here -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="measurements-section">
+                                    <h4><i class="fas fa-calculator"></i> Measurements</h4>
+                                    <div id="measurements-list" class="measurements-grid">
+                                        <!-- Measurements will be populated here -->
+                                    </div>
+                                </div>
+                                
+                                <div class="report-section">
+                                    <h4><i class="fas fa-file-medical-alt"></i> Professional Report</h4>
+                                    <div class="report-card">
+                                        <div id="analysis-report" class="report-content">
+                                            <!-- Report will be populated here -->
+                                        </div>
+                                        <div class="report-actions">
+                                            <button class="btn btn-outline-primary">
+                                                <i class="fas fa-download"></i> Download Report
+                                            </button>
+                                            <button class="btn btn-outline-secondary">
+                                                <i class="fas fa-share"></i> Share Results
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

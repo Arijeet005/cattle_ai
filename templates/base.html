@@ -22,21 +22,6 @@
                             <i class="fas fa-home"></i> Home
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'guide' %}active{% endif %}" href="{{ url_for('guide') }}">
-                            <i class="fas fa-book"></i> Guide
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'faq' %}active{% endif %}" href="{{ url_for('faq') }}">
-                            <i class="fas fa-question-circle"></i> FAQ
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'about' %}active{% endif %}" href="{{ url_for('about') }}">
-                            <i class="fas fa-info-circle"></i> About
-                        </a>
-                    </li>
                 </ul>
             </div>
         </div>
