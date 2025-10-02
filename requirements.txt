@@ -4,13 +4,9 @@ Flask==2.0.1
 Werkzeug==2.0.3
 gunicorn==20.1.0
 Pillow==9.5.0
---find-links https://download.pytorch.org/whl/torch_stable.html
 torch==2.0.1+cpu
 torchvision==0.15.2+cpu
 itsdangerous==2.0.1
 click==8.0.1
 Jinja2==3.0.1
 MarkupSafe==2.0.1
-
-# Install requirements using:
-# pip install -r requirements.txt
