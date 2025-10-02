@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Analysis button handlers
     const comprehensiveBtn = document.getElementById('comprehensive-analysis-btn');
     const demoBtn = document.getElementById('demo-btn');
+    const demoNoneBtn = document.getElementById('demo-none-btn');
     
     if (comprehensiveBtn) {
         comprehensiveBtn.addEventListener('click', performComprehensiveAnalysis);
@@ -35,6 +36,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (demoBtn) {
         demoBtn.addEventListener('click', showDemoResults);
+    }
+    
+    if (demoNoneBtn) {
+        demoNoneBtn.addEventListener('click', showDemoNoneResults);
     }
     
     if (analyzeBtn) {
@@ -182,20 +187,39 @@ document.addEventListener('DOMContentLoaded', function() {
             if (classificationData.success !== false) {
                 displayClassificationResults(classificationData);
                 
-                // Then perform structure analysis
-                const formData2 = new FormData();
-                formData2.append('file', currentImageFile);
-                
-                return fetch('/analyze_structure', {
-                    method: 'POST',
-                    body: formData2
-                });
+                // Only perform structure analysis if animal type is not "None"
+                if (classificationData.cattle_type !== 'None') {
+                    const formData2 = new FormData();
+                    formData2.append('file', currentImageFile);
+                    
+                    return fetch('/analyze_structure', {
+                        method: 'POST',
+                        body: formData2
+                    });
+                } else {
+                    console.log('Skipping structure analysis - animal type is None');
+                    hideLoading();
+                    showResults();
+                    return Promise.resolve({ success: false, skip: true });
+                }
             } else {
                 throw new Error(classificationData.error || 'Classification failed');
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.skip) {
+                // Structure analysis was skipped
+                return Promise.resolve({ success: false, skip: true });
+            }
+            return response.json();
+        })
         .then(structureData => {
+            if (structureData.skip) {
+                // Analysis was skipped, nothing more to do
+                console.log('Comprehensive analysis completed (structure analysis skipped)');
+                return;
+            }
+            
             hideLoading();
             if (structureData.success) {
                 displayStructureResults(structureData);
@@ -232,6 +256,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const atcLevelEl = document.getElementById('atc-level');
         if (atcScoreEl) atcScoreEl.textContent = '0';
         if (atcLevelEl) atcLevelEl.textContent = 'Calculating...';
+        
+        // Show body parameters and ATC sections by default (they will be hidden if needed)
+        const bodyParametersSection = document.querySelector('.body-parameters-section');
+        const atcScoreSection = document.querySelector('.atc-score-section');
+        if (bodyParametersSection) {
+            bodyParametersSection.style.display = 'block';
+        }
+        if (atcScoreSection) {
+            atcScoreSection.style.display = 'block';
+        }
     }
 
     function showLoading(message = 'Processing...') {
@@ -325,6 +359,28 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Hiding breed card - no breed data or unknown breed');
             if (breedCard) {
                 breedCard.style.display = 'none';
+            }
+        }
+
+        // Hide body parameters and ATC sections if animal type is "None"
+        const bodyParametersSection = document.querySelector('.body-parameters-section');
+        const atcScoreSection = document.querySelector('.atc-score-section');
+        
+        if (data.cattle_type === 'None') {
+            console.log('Animal type is None - hiding body parameters and ATC sections');
+            if (bodyParametersSection) {
+                bodyParametersSection.style.display = 'none';
+            }
+            if (atcScoreSection) {
+                atcScoreSection.style.display = 'none';
+            }
+        } else {
+            console.log('Animal type is valid - showing body parameters and ATC sections');
+            if (bodyParametersSection) {
+                bodyParametersSection.style.display = 'block';
+            }
+            if (atcScoreSection) {
+                atcScoreSection.style.display = 'block';
             }
         }
     }
@@ -422,6 +478,44 @@ document.addEventListener('DOMContentLoaded', function() {
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         `;
         notification.innerHTML = '<i class="fas fa-info-circle"></i> Demo results displayed - showing all features!';
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 4000);
+    }
+
+    function showDemoNoneResults() {
+        // Show demo results for "None" detection (no cattle/buffalo detected)
+        resetAllDisplays();
+        
+        // Demo classification results for "None"
+        const demoNoneData = {
+            cattle_type: "None",
+            cattle_confidence: "85%",
+            success: true
+        };
+        
+        // Display the demo results (body parameters and ATC will be hidden automatically)
+        displayClassificationResults(demoNoneData);
+        showResults();
+        
+        // Show a notification
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--error-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        notification.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Demo "None" detection - body analysis sections hidden!';
         document.body.appendChild(notification);
         
         setTimeout(() => {
