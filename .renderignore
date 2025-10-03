@@ -1,37 +1,29 @@
+# Ignore Docker files
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Ignore virtual environment
+myenv/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
-env/
-venv/
-.venv/
-pip-log.txt
-pip-delete-this-directory.txt
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.log
-.git
-.mypy_cache
-.pytest_cache
-.hypothesis
-.DS_Store
+
+# Ignore IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-myenv/
-*.pth
-!models/*.pth
 
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore logs
+*.log
+logs/
+
+# Ignore temporary files
+*.tmp
+*.temp
