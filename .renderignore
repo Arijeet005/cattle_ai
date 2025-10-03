@@ -2,6 +2,7 @@
 Dockerfile*
 docker-compose*
 .dockerignore
+Procfile
 
 # Ignore virtual environment
 myenv/
