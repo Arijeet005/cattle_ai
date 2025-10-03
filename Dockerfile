@@ -1,6 +1,24 @@
-# This is a minimal Dockerfile to prevent Render from failing
-# Render should use the render.yaml configuration instead
-FROM python:3.10-slim
+# Use a base image with better OpenCV support
+FROM python:3.10
+
+# Install system dependencies for OpenCV
+RUN apt-get update && apt-get install -y \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libjpeg-dev \
+    libpng-dev \
+    libtiff-dev \
+    libatlas-base-dev \
+    gfortran \
+    wget \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
