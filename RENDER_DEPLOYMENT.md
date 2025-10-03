@@ -195,3 +195,4 @@ Once deployed, your Cattle AI Analyzer will be:
 - **PyTorch Deployment**: https://pytorch.org/tutorials/beginner/deploy_model.html
 
 **Happy Deploying! 🚀🐄**
+
